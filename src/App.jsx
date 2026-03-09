@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzxv0TaG8XI-ga6qcYQXf_C5zHg5s2W_H95QB7LkV7L4Yc5uGfvenjyEM21SutDLS2xRQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwWHhsjsFhF3QKuUhxG_sAclhqXuPb_3oGs-EHhbr7wwO72lVR8NOPNqgxKO7dxDrFzoQ/exec";
 
 const MEDIA_OPTIONS = [
   { id: "line",      label: "LINE",        icon: "💬", color: "#06C755" },
