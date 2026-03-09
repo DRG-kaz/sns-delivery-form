@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzs7_8a7AKE2SwdfHLjOy2ge0oOyms7D2zR0kBtHfm10QmN2xzMPE5HPzw51ITgEl0JPg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxlMoKvV7XhzNpIRadB23vhDfGW8my-JXK7af6c3SkS9KdcMx9TheQqufPZKquiLtrddQ/exec";
 
 const MEDIA_OPTIONS = [
   { id: "line",      label: "LINE",        icon: "💬", color: "#06C755" },
@@ -102,13 +102,12 @@ export default function App() {
 
       const res = await fetch(GAS_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      // no-corsの場合はレスポンスが読めないので成功とみなす
-      setManagementNo("受付完了");
+      const result = await res.json();
+      setManagementNo(result.managementNo || "受付完了");
       setStep(3);
       window.scrollTo(0, 0);
     } catch (e) {
@@ -360,7 +359,7 @@ export default function App() {
                 marginBottom: 20,
               }}>
                 <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>管理番号</div>
-                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 4 }}>スプレッドシートで確認</div>
+                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 4 }}>{managementNo}</div>
               </div>
               <p style={{ color: "#666", fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
                 ご依頼ありがとうございます。<br />
@@ -377,8 +376,9 @@ export default function App() {
           )}
         </div>
 
-        <p style={{ textAlign: "center", color: "#bbb", fontSize: 11, marginTop: 20 }}>
-          ※ このフォームは社内限定です
+        <p style={{ textAlign: "center", color: "#bbb", fontSize: 11, marginTop: 20, lineHeight: 1.8 }}>
+          ※ このフォームは社内限定です<br />
+          開発・管理：マーケティング部 山﨑一輝
         </p>
       </div>
     </div>
