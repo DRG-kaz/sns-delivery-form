@@ -17,6 +17,8 @@ const initialForm = {
   media: [],
   content: "",
   targetAudience: "",
+  eventStart: "",
+  eventEnd: "",
   deliveryDate: "",
   deliveryTime: "",
   notes: "",
@@ -94,6 +96,7 @@ export default function App() {
         media: mediaLabels,
         content: form.content,
         targetAudience: form.targetAudience,
+        eventPeriod: form.eventStart ? `${form.eventStart}〜${form.eventEnd || ""}` : "",
         deliveryDateTime: `${form.deliveryDate} ${form.deliveryTime}`.trim(),
         notes: form.notes,
         files: filesData,
@@ -230,6 +233,19 @@ export default function App() {
                 </Field>
               </Section>
 
+              <Section title="📆 イベント・キャンペーン期間（任意）">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <Field label="開始日">
+                    <input type="date" value={form.eventStart} onChange={e => setForm(f => ({ ...f, eventStart: e.target.value }))}
+                      style={inputStyle} />
+                  </Field>
+                  <Field label="終了日">
+                    <input type="date" value={form.eventEnd} onChange={e => setForm(f => ({ ...f, eventEnd: e.target.value }))}
+                      style={inputStyle} />
+                  </Field>
+                </div>
+              </Section>
+
               <Section title="📅 配信希望日時">
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <Field label="日付 *">
@@ -308,6 +324,7 @@ export default function App() {
                 ["配信媒体", form.media.map(id => MEDIA_OPTIONS.find(m => m.id === id)?.label).join("、")],
                 ["配信テキスト", form.content],
                 ["ターゲット", form.targetAudience || "（未入力）"],
+                ["イベント期間", form.eventStart ? `${form.eventStart}〜${form.eventEnd || "未定"}` : "（未入力）"],
                 ["配信希望日時", `${form.deliveryDate}${form.deliveryTime ? " " + form.deliveryTime : ""}`],
                 ["添付ファイル", form.files.length > 0 ? form.files.map(f => f.name).join("、") : "（なし）"],
                 ["備考", form.notes || "（未入力）"],
