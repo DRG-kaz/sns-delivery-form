@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzrwop6eeh9U_cVUtD7GANrGIVTAp1QzSePh-AaTFzS0Dt-v5um9ZNgOEL3WC19c_5czA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzxv0TaG8XI-ga6qcYQXf_C5zHg5s2W_H95QB7LkV7L4Yc5uGfvenjyEM21SutDLS2xRQ/exec";
 
 const MEDIA_OPTIONS = [
   { id: "line",      label: "LINE",        icon: "💬", color: "#06C755" },
@@ -103,11 +103,10 @@ export default function App() {
         submittedAt: new Date().toLocaleString("ja-JP"),
       };
 
-      await fetch(GAS_URL, {
-        method: "POST",
+      const params = encodeURIComponent(JSON.stringify(payload));
+      await fetch(`${GAS_URL}?data=${params}`, {
+        method: "GET",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       });
 
       setStep(3);
