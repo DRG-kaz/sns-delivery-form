@@ -100,14 +100,13 @@ export default function App() {
         submittedAt: new Date().toLocaleString("ja-JP"),
       };
 
-      const res = await fetch(GAS_URL, {
+      await fetch(GAS_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const result = await res.json();
-      setManagementNo(result.managementNo || "受付完了");
       setStep(3);
       window.scrollTo(0, 0);
     } catch (e) {
@@ -359,7 +358,7 @@ export default function App() {
                 marginBottom: 20,
               }}>
                 <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>管理番号</div>
-                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 4 }}>{managementNo}</div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>受付メールをご確認ください</div>
               </div>
               <p style={{ color: "#666", fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
                 ご依頼ありがとうございます。<br />
