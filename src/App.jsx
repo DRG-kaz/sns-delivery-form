@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwWHhsjsFhF3QKuUhxG_sAclhqXuPb_3oGs-EHhbr7wwO72lVR8NOPNqgxKO7dxDrFzoQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzxOAi-uOAxiyzvjtGZZdQvtTGBzzP2fbuTKvmtYtlQv4nBH2qLkjNONdWBNCiVBgdAYA/exec";
 
 const MEDIA_OPTIONS = [
   { id: "line",      label: "LINE",        icon: "💬", color: "#06C755" },
@@ -80,17 +80,10 @@ export default function App() {
     setError("");
     try {
       const mediaLabels = form.media.map(id => MEDIA_OPTIONS.find(m => m.id === id)?.label).join(", ");
+      const submittedAt = new Date().toLocaleString("ja-JP");
 
-      // ファイルをBase64に変換
-      const filesData = await Promise.all(
-        form.files.map(async (file) => ({
-          name: file.name,
-          mimeType: file.type,
-          data: await toBase64(file),
-        }))
-      );
-
-      const payload = {
+      // テキストデータをGETで送信
+      const textPayload = {
         name: form.name,
         email: form.email,
         media: mediaLabels,
@@ -99,15 +92,37 @@ export default function App() {
         eventPeriod: form.eventStart ? `${form.eventStart}〜${form.eventEnd || ""}` : "",
         deliveryDateTime: `${form.deliveryDate} ${form.deliveryTime}`.trim(),
         notes: form.notes,
-        files: filesData,
-        submittedAt: new Date().toLocaleString("ja-JP"),
+        submittedAt,
       };
 
-      const params = encodeURIComponent(JSON.stringify(payload));
+      const params = encodeURIComponent(JSON.stringify(textPayload));
       await fetch(`${GAS_URL}?data=${params}`, {
         method: "GET",
         mode: "no-cors",
       });
+
+      // ファイルがあればPOSTで別送
+      if (form.files.length > 0) {
+        const filesData = await Promise.all(
+          form.files.map(async (file) => ({
+            name: file.name,
+            mimeType: file.type,
+            data: await toBase64(file),
+          }))
+        );
+        const filePayload = {
+          type: "files",
+          email: form.email,
+          submittedAt,
+          files: filesData,
+        };
+        await fetch(GAS_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(filePayload),
+        });
+      }
 
       setStep(3);
       window.scrollTo(0, 0);
