@@ -106,24 +106,22 @@ export default function App() {
       if (getJson.managementNo) setManagementNo(getJson.managementNo);
 
       // ② 通知をGETで実行（POSTは届かないためGETで代替）
-      const notifyPayload = { action: "notify", submittedAt, hasFiles: form.files.length > 0 };
+      const notifyPayload = { action: "notify", submittedAt, hasFiles: form.files.length > 0, fileCount: form.files.length };
       const notifyParams = encodeURIComponent(JSON.stringify(notifyPayload));
       await fetch(`${GAS_URL}?data=${notifyParams}`, { method: "GET", mode: "no-cors" });
 
-      // ③ ファイルがあればPOSTで保存のみ
-      if (form.files.length > 0) {
-        const filesData = await Promise.all(
-          form.files.map(async (file) => ({
-            name: file.name,
-            mimeType: file.type,
-            data: await toBase64(file),
-          }))
-        );
+      // ③ ファイルを1つずつPOSTで保存（大きいファイルも確実に届くよう個別送信）
+      for (const file of form.files) {
+        const fileData = await toBase64(file);
         await fetch(GAS_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "files_only", submittedAt, files: filesData }),
+          body: JSON.stringify({
+            type: "files_only",
+            submittedAt,
+            files: [{ name: file.name, mimeType: file.type, data: fileData }],
+          }),
         });
       }
 
