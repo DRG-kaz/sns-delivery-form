@@ -99,35 +99,33 @@ export default function App() {
         submittedAt,
       };
 
-      // ① テキストデータをGETで送信（スプレッドシート記録のみ、通知なし）
+      // ① テキストデータをGETで記録→管理番号取得
       const params = encodeURIComponent(JSON.stringify(textPayload));
-      const getRes = await fetch(`${GAS_URL}?data=${params}`, {
-        method: "GET",
-      });
+      const getRes = await fetch(`${GAS_URL}?data=${params}`, { method: "GET" });
       const getJson = await getRes.json();
       if (getJson.managementNo) setManagementNo(getJson.managementNo);
 
-      // ② ファイルの有無に関わらず必ずPOSTを送信（通知はこちらで行う）
-      const filesData = await Promise.all(
-        form.files.map(async (file) => ({
-          name: file.name,
-          mimeType: file.type,
-          data: await toBase64(file),
-        }))
-      );
-      // POSTは最小限（submittedAtで行を特定し、ファイル保存＋通知）
-      const filePayload = {
-        type: "files",
-        email: form.email,
-        submittedAt,
-        files: filesData,
-      };
-      await fetch(GAS_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(filePayload),
-      });
+      // ② 通知をGETで実行（POSTは届かないためGETで代替）
+      const notifyPayload = { action: "notify", submittedAt };
+      const notifyParams = encodeURIComponent(JSON.stringify(notifyPayload));
+      await fetch(`${GAS_URL}?data=${notifyParams}`, { method: "GET", mode: "no-cors" });
+
+      // ③ ファイルがあればPOSTで保存のみ
+      if (form.files.length > 0) {
+        const filesData = await Promise.all(
+          form.files.map(async (file) => ({
+            name: file.name,
+            mimeType: file.type,
+            data: await toBase64(file),
+          }))
+        );
+        await fetch(GAS_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "files_only", submittedAt, files: filesData }),
+        });
+      }
 
       setStep(3);
       window.scrollTo(0, 0);
@@ -403,6 +401,7 @@ export default function App() {
               </div>
               <p style={{ color: "#666", fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
                 ご依頼ありがとうございます。<br />
+                受付確認メールをご登録のアドレスに送信しました。<br />
                 内容を確認次第、担当者よりご連絡いたします。
               </p>
               <button onClick={reset} style={{
