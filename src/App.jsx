@@ -12,6 +12,7 @@ const MEDIA_OPTIONS = [
 ];
 
 const initialForm = {
+  storeName: "",
   name: "",
   email: "",
   media: [],
@@ -59,6 +60,7 @@ export default function App() {
   };
 
   const validate = () => {
+    if (!form.storeName.trim()) return "店舗名を入力してください";
     if (!form.name.trim()) return "お名前を入力してください";
     if (!form.email.trim()) return "メールアドレスを入力してください";
     if (form.media.length === 0) return "配信媒体を1つ以上選択してください";
@@ -84,6 +86,7 @@ export default function App() {
 
       // テキストデータをGETで送信
       const textPayload = {
+        storeName: form.storeName,
         name: form.name,
         email: form.email,
         media: mediaLabels,
@@ -206,6 +209,10 @@ export default function App() {
           {step === 1 && (
             <div>
               <Section title="👤 依頼者情報">
+                <Field label="店舗名 *">
+                  <input value={form.storeName} onChange={e => setForm(f => ({ ...f, storeName: e.target.value }))}
+                    placeholder="例：渋谷店、新宿店" style={inputStyle} />
+                </Field>
                 <Field label="お名前 *">
                   <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="山田 太郎" style={inputStyle} />
@@ -333,6 +340,7 @@ export default function App() {
                 📋 入力内容の確認
               </h2>
               {[
+                ["店舗名", form.storeName],
                 ["お名前", form.name],
                 ["メールアドレス", form.email],
                 ["配信媒体", form.media.map(id => MEDIA_OPTIONS.find(m => m.id === id)?.label).join("、")],
