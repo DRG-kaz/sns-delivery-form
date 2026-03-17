@@ -95,37 +95,39 @@ export default function App() {
         eventPeriod: form.eventStart ? `${form.eventStart}〜${form.eventEnd || ""}` : "",
         deliveryDateTime: `${form.deliveryDate} ${form.deliveryTime}`.trim(),
         notes: form.notes,
+        hasFiles: form.files.length > 0,
         submittedAt,
       };
 
+      // ① テキストデータをGETで送信（スプレッドシート記録のみ、通知なし）
       const params = encodeURIComponent(JSON.stringify(textPayload));
-      await fetch(`${GAS_URL}?data=${params}`, {
+      const getRes = await fetch(`${GAS_URL}?data=${params}`, {
         method: "GET",
-        mode: "no-cors",
       });
+      const getJson = await getRes.json();
+      if (getJson.managementNo) setManagementNo(getJson.managementNo);
 
-      // ファイルがあればPOSTで別送
-      if (form.files.length > 0) {
-        const filesData = await Promise.all(
-          form.files.map(async (file) => ({
-            name: file.name,
-            mimeType: file.type,
-            data: await toBase64(file),
-          }))
-        );
-        const filePayload = {
-          type: "files",
-          email: form.email,
-          submittedAt,
-          files: filesData,
-        };
-        await fetch(GAS_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(filePayload),
-        });
-      }
+      // ② ファイルの有無に関わらず必ずPOSTを送信（通知はこちらで行う）
+      const filesData = await Promise.all(
+        form.files.map(async (file) => ({
+          name: file.name,
+          mimeType: file.type,
+          data: await toBase64(file),
+        }))
+      );
+      // POSTは最小限（submittedAtで行を特定し、ファイル保存＋通知）
+      const filePayload = {
+        type: "files",
+        email: form.email,
+        submittedAt,
+        files: filesData,
+      };
+      await fetch(GAS_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(filePayload),
+      });
 
       setStep(3);
       window.scrollTo(0, 0);
@@ -397,7 +399,7 @@ export default function App() {
                 marginBottom: 20,
               }}>
                 <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>管理番号</div>
-                <div style={{ fontSize: 20, fontWeight: 700 }}>受付メールをご確認ください</div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{managementNo || "受付メールをご確認ください"}</div>
               </div>
               <p style={{ color: "#666", fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
                 ご依頼ありがとうございます。<br />
