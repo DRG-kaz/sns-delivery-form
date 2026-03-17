@@ -106,7 +106,7 @@ export default function App() {
       if (getJson.managementNo) setManagementNo(getJson.managementNo);
 
       // ② 通知をGETで実行（POSTは届かないためGETで代替）
-      const notifyPayload = { action: "notify", submittedAt };
+      const notifyPayload = { action: "notify", submittedAt, hasFiles: form.files.length > 0 };
       const notifyParams = encodeURIComponent(JSON.stringify(notifyPayload));
       await fetch(`${GAS_URL}?data=${notifyParams}`, { method: "GET", mode: "no-cors" });
 
